@@ -4,6 +4,8 @@ namespace KudosApp.Application.Interfaces;
 
 public interface IKudosRepository
 {
+    Task<int> GetFeedCountAsync();
+
     Task<IEnumerable<Kudos>> GetFeedAsync(int page, int pageSize);
 
     Task<Kudos?> GetByIdAsync(Guid id);

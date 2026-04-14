@@ -7,6 +7,9 @@ namespace KudosApp.Infrastructure.Repositories;
 
 public class KudosRepository(KudosDbContext context) : IKudosRepository
 {
+    public Task<int> GetFeedCountAsync() =>
+        context.Kudos.CountAsync();
+
     public async Task<IEnumerable<Kudos>> GetFeedAsync(int page, int pageSize)
     {
         var skip = page < 1 ? 0 : (page - 1) * pageSize;
