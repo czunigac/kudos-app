@@ -1,0 +1,22 @@
+
+# Secrets
+.env
+.env.local
+.env.*.local
+backend/**/appsettings.Development.json
+frontend/.env.local
+
+# Personal AI overrides
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Build outputs
+backend/**/bin/
+backend/**/obj/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# OS
+.DS_Store
+Thumbs.db
