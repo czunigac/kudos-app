@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KudosApp.API", "KudosApp.API\KudosApp.API.csproj", "{7B11AC78-4B2E-4DE5-8966-54884B1A2170}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KudosApp.Application", "KudosApp.Application\KudosApp.Application.csproj", "{3C30F532-5614-4D46-A7C5-E84BB4A67AAA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KudosApp.Domain", "KudosApp.Domain\KudosApp.Domain.csproj", "{9E0044E7-7428-4B95-A1BD-7AE071AF038E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KudosApp.Infrastructure", "KudosApp.Infrastructure\KudosApp.Infrastructure.csproj", "{A4D1F6D1-CAFD-4CA4-916B-D107CB97B997}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7B11AC78-4B2E-4DE5-8966-54884B1A2170}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B11AC78-4B2E-4DE5-8966-54884B1A2170}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B11AC78-4B2E-4DE5-8966-54884B1A2170}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B11AC78-4B2E-4DE5-8966-54884B1A2170}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C30F532-5614-4D46-A7C5-E84BB4A67AAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C30F532-5614-4D46-A7C5-E84BB4A67AAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C30F532-5614-4D46-A7C5-E84BB4A67AAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C30F532-5614-4D46-A7C5-E84BB4A67AAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E0044E7-7428-4B95-A1BD-7AE071AF038E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E0044E7-7428-4B95-A1BD-7AE071AF038E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E0044E7-7428-4B95-A1BD-7AE071AF038E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E0044E7-7428-4B95-A1BD-7AE071AF038E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4D1F6D1-CAFD-4CA4-916B-D107CB97B997}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4D1F6D1-CAFD-4CA4-916B-D107CB97B997}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4D1F6D1-CAFD-4CA4-916B-D107CB97B997}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4D1F6D1-CAFD-4CA4-916B-D107CB97B997}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
