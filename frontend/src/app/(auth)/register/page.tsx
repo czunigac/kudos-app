@@ -1,10 +1,17 @@
 import { RegisterForm } from "@/components/auth/RegisterForm";
-import { Award } from "lucide-react";
+import { ArrowLeft, Award } from "lucide-react";
 import Link from "next/link";
 
 export default function RegisterPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-kudos-bg px-4 py-12">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-kudos-bg px-4 py-12">
+      <Link
+        href="/"
+        className="absolute left-4 top-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground md:left-8 md:top-6"
+      >
+        <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden />
+        Back to home
+      </Link>
       <div className="flex w-full max-w-md flex-col items-center gap-8">
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/15 text-primary">

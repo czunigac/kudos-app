@@ -9,6 +9,11 @@ function isAuthRoute(pathname: string) {
   );
 }
 
+function isPublicRoute(pathname: string) {
+  if (pathname === "/") return true;
+  return isAuthRoute(pathname);
+}
+
 /** Attach refreshed Supabase cookies (and no-store cache headers) to a redirect response. */
 function mergeSupabaseAuthIntoRedirect(
   supabaseResponse: NextResponse,
@@ -52,7 +57,7 @@ export async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  if (!user && !isAuthRoute(pathname)) {
+  if (!user && !isPublicRoute(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     const redirectResponse = NextResponse.redirect(url);
