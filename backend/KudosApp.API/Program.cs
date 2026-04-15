@@ -1,6 +1,7 @@
 using KudosApp.Application.Interfaces;
 using KudosApp.Infrastructure.Data;
 using KudosApp.Infrastructure.Repositories;
+using KudosApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -14,6 +15,8 @@ builder.Services.AddDbContext<KudosDbContext>(options =>
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<IKudosRepository, KudosRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+builder.Services.AddHttpClient<ICoachService, KudosCoachService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -52,6 +55,9 @@ var authority = $"{supabaseUrl.TrimEnd('/')}/auth/v1";
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        // Supabase JWTs use short claim names ("sub", "email"). Default JWT handler
+        // maps them to long WS-* URIs, which breaks our claim lookups.
+        options.MapInboundClaims = false;
         options.Authority = authority;
         options.MetadataAddress = $"{authority}/.well-known/openid-configuration";
         options.TokenValidationParameters = new TokenValidationParameters

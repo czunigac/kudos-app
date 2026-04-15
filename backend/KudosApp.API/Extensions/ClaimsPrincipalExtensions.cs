@@ -6,7 +6,9 @@ public static class ClaimsPrincipalExtensions
 {
     public static Guid? GetUserId(this ClaimsPrincipal principal)
     {
-        var value = principal.FindFirst("sub")?.Value;
+        var value =
+            principal.FindFirst("sub")?.Value
+            ?? principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(value) || !Guid.TryParse(value, out var id))
             return null;
 
@@ -14,7 +16,8 @@ public static class ClaimsPrincipalExtensions
     }
 
     public static string? GetEmail(this ClaimsPrincipal principal) =>
-        principal.FindFirst("email")?.Value;
+        principal.FindFirst("email")?.Value
+        ?? principal.FindFirst(ClaimTypes.Email)?.Value;
 
     public static string? GetRole(this ClaimsPrincipal principal) =>
         principal.FindFirst("user_role")?.Value;
