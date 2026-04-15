@@ -73,7 +73,13 @@ public class KudosController(
     {
         var categories = await categoryRepo.GetAllActiveAsync();
         var list = categories
-            .Select(c => new CategoryDto(c.Id, c.Name, c.Icon, c.PointValue, c.Color))
+            .Select(c => new CategoryDto(
+                c.Id,
+                c.Name,
+                c.Description,
+                c.Icon,
+                c.PointValue,
+                c.Color))
             .ToList();
 
         return Ok(list);
@@ -102,6 +108,7 @@ public class KudosController(
             new CategoryDto(
                 k.Category.Id,
                 k.Category.Name,
+                k.Category.Description,
                 k.Category.Icon,
                 k.Category.PointValue,
                 k.Category.Color));
