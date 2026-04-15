@@ -17,7 +17,7 @@ kudos-app/
 ```
 
 Run everything: `docker compose up --build`
-API: http://localhost:5000/swagger
+API: http://localhost:5235/swagger
 Frontend: http://localhost:3000
 
 ---
@@ -144,7 +144,7 @@ Frontend: http://localhost:3000
 Supabase URL:     https://lcauhvseclfhvrwazkxg.supabase.co
 JWKS endpoint:    https://lcauhvseclfhvrwazkxg.supabase.co/auth/v1/.well-known/jwks.json
 DB host:          db.lcauhvseclfhvrwazkxg.supabase.co
-API local:        http://localhost:5000
+API local:        http://localhost:5235
 Frontend local:   http://localhost:3000
 ```
 
