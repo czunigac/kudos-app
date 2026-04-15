@@ -15,13 +15,24 @@ export function useAuth() {
   const login = useCallback(
     async (email: string, password: string) => {
       const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data: signInData, error } = await supabase.auth.signInWithPassword(
+        {
+          email,
+          password,
+        }
+      );
       if (error) throw new Error(error.message);
 
-      const { data } = await api.post<UserProfile>("/api/auth/sync-profile");
+      const token = signInData.session?.access_token;
+      if (!token) {
+        throw new Error("No session returned. Try again or reset your password.");
+      }
+
+      const { data } = await api.post<UserProfile>(
+        "/api/auth/sync-profile",
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setProfile(data);
       router.push("/feed");
     },
@@ -31,14 +42,25 @@ export function useAuth() {
   const register = useCallback(
     async (email: string, password: string, displayName: string) => {
       const supabase = createClient();
-      const { error } = await supabase.auth.signUp({
+      const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { name: displayName } },
       });
       if (error) throw new Error(error.message);
 
-      const { data } = await api.post<UserProfile>("/api/auth/sync-profile");
+      const token = signUpData.session?.access_token;
+      if (!token) {
+        throw new Error(
+          "Account created. Confirm your email if required, then sign in."
+        );
+      }
+
+      const { data } = await api.post<UserProfile>(
+        "/api/auth/sync-profile",
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setProfile(data);
       router.push("/feed");
     },
@@ -53,6 +75,16 @@ export function useAuth() {
   }, [router, setProfile]);
 
   const loadProfile = useCallback(async () => {
+    const supabase = createClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      setProfile(null);
+      return;
+    }
+
     try {
       const { data } = await api.get<UserProfile>("/api/auth/me");
       setProfile(data);
