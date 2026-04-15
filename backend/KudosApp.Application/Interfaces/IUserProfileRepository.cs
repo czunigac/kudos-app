@@ -17,4 +17,8 @@ public interface IUserProfileRepository
     Task<UserProfile> UpsertAsync(UserProfile profile);
 
     Task UpdatePointsAsync(Guid userId, int pointsToAdd);
+
+    Task<bool> HasBadgeAsync(Guid userId, BadgeType type);
+
+    Task AddBadgeAsync(Badge badge);
 }

@@ -1,3 +1,4 @@
+using KudosApp.API.Auth;
 using KudosApp.API.Extensions;
 using KudosApp.Application.DTOs;
 using KudosApp.Application.DTOs.Kudos;
@@ -60,6 +61,12 @@ public class KudosController(
         var created = await kudosRepo.CreateAsync(kudos);
         await userRepo.UpdatePointsAsync(request.ReceiverId, category.PointValue);
 
+        await TryAwardMilestoneBadgesAsync(
+            giverId.Value,
+            request.ReceiverId,
+            userRepo,
+            kudosRepo);
+
         var withNavigations = await kudosRepo.GetByIdAsync(created.Id);
         if (withNavigations is null)
             return StatusCode(StatusCodes.Status500InternalServerError);
@@ -83,6 +90,31 @@ public class KudosController(
             .ToList();
 
         return Ok(list);
+    }
+
+    [HttpGet("leaderboard")]
+    [Authorize]
+    public async Task<IActionResult> GetLeaderboard([FromQuery] int top = 5)
+    {
+        top = Math.Clamp(top, 1, 25);
+        var topGivers = await kudosRepo.GetTopGiversAsync(top);
+        var topReceivers = await kudosRepo.GetTopReceiversAsync(top);
+        return Ok(new { topGivers, topReceivers });
+    }
+
+    private static async Task TryAwardMilestoneBadgesAsync(
+        Guid giverId,
+        Guid receiverId,
+        IUserProfileRepository userRepo,
+        IKudosRepository kudosRepo)
+    {
+        var givenCount = await kudosRepo.CountGivenByUserAsync(giverId);
+        if (givenCount == 1 && !await userRepo.HasBadgeAsync(giverId, BadgeType.FirstKudos))
+            await userRepo.AddBadgeAsync(BadgeFactory.CreateFirstKudosGiven(giverId));
+
+        var receivedCount = await kudosRepo.CountReceivedByUserAsync(receiverId);
+        if (receivedCount == 1 && !await userRepo.HasBadgeAsync(receiverId, BadgeType.FirstReceived))
+            await userRepo.AddBadgeAsync(BadgeFactory.CreateFirstRecognition(receiverId));
     }
 
     private static KudosDto MapToDto(Kudos k) =>

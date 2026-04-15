@@ -62,4 +62,13 @@ public class UserProfileRepository(KudosDbContext context) : IUserProfileReposit
         context.UserProfiles
             .Where(p => p.Id == userId)
             .ExecuteUpdateAsync(s => s.SetProperty(p => p.TotalPoints, p => p.TotalPoints + pointsToAdd));
+
+    public Task<bool> HasBadgeAsync(Guid userId, BadgeType type) =>
+        context.Badges.AnyAsync(b => b.UserId == userId && b.Type == type);
+
+    public async Task AddBadgeAsync(Badge badge)
+    {
+        context.Badges.Add(badge);
+        await context.SaveChangesAsync();
+    }
 }

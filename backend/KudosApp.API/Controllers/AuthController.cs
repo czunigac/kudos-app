@@ -1,3 +1,4 @@
+using KudosApp.API.Auth;
 using KudosApp.API.Extensions;
 using KudosApp.Application.Interfaces;
 using KudosApp.Domain.Entities;
@@ -8,7 +9,7 @@ namespace KudosApp.API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(IUserProfileRepository userRepo) : ControllerBase
+public class AuthController(IUserProfileRepository userRepo, IKudosRepository kudosRepo) : ControllerBase
 {
     [HttpPost("sync-profile")]
     [Authorize]
@@ -19,12 +20,7 @@ public class AuthController(IUserProfileRepository userRepo) : ControllerBase
         if (userId is null || string.IsNullOrEmpty(email))
             return Unauthorized();
 
-        var displayName = User.FindFirst("name")?.Value;
-        if (string.IsNullOrWhiteSpace(displayName))
-        {
-            var at = email.IndexOf('@');
-            displayName = at > 0 ? email[..at] : email;
-        }
+        var displayName = DisplayNameResolver.FromClaims(User, email);
 
         var avatarUrl =
             $"https://api.dicebear.com/7.x/initials/svg?seed={Uri.EscapeDataString(displayName)}";
@@ -37,8 +33,12 @@ public class AuthController(IUserProfileRepository userRepo) : ControllerBase
             AvatarUrl = avatarUrl
         };
 
-        var saved = await userRepo.UpsertAsync(profile);
-        return Ok(ProfileResponse(saved));
+        await userRepo.UpsertAsync(profile);
+        var fresh = await userRepo.GetByIdAsync(userId.Value);
+        if (fresh is null)
+            return StatusCode(StatusCodes.Status500InternalServerError);
+
+        return Ok(await ToProfileResponseAsync(fresh));
     }
 
     [HttpGet("me")]
@@ -53,17 +53,36 @@ public class AuthController(IUserProfileRepository userRepo) : ControllerBase
         if (profile is null)
             return NotFound();
 
-        return Ok(ProfileResponse(profile));
+        return Ok(await ToProfileResponseAsync(profile));
     }
 
-    private static object ProfileResponse(UserProfile p) =>
-        new
+    private async Task<object> ToProfileResponseAsync(UserProfile p)
+    {
+        var given = await kudosRepo.CountGivenByUserAsync(p.Id);
+        var received = await kudosRepo.CountReceivedByUserAsync(p.Id);
+
+        return new
         {
             id = p.Id,
             email = p.Email,
             displayName = p.DisplayName,
             avatarUrl = p.AvatarUrl,
             role = p.Role.ToString(),
-            totalPoints = p.TotalPoints
+            totalPoints = p.TotalPoints,
+            kudosGivenCount = given,
+            kudosReceivedCount = received,
+            badges = p.Badges
+                .OrderByDescending(b => b.EarnedAt)
+                .Select(b => new
+                {
+                    id = b.Id,
+                    name = b.Name,
+                    description = b.Description,
+                    icon = b.Icon,
+                    type = b.Type.ToString(),
+                    earnedAt = b.EarnedAt
+                })
+                .ToList()
         };
+    }
 }

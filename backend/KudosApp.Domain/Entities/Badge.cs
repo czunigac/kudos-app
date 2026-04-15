@@ -3,6 +3,7 @@ namespace KudosApp.Domain.Entities;
 public enum BadgeType
 {
     FirstKudos,
+    FirstReceived,
     TopGiver,
     TopReceiver,
     Streak,
