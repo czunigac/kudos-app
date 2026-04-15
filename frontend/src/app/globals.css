@@ -1,24 +1,33 @@
 @import "tailwindcss";
+@config "../../tailwind.config.ts";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 240 5% 7%;
+    --foreground: 45 8% 94%;
+    --card: 240 5% 10%;
+    --card-foreground: 45 8% 94%;
+    --primary: 248 88% 68%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 13%;
+    --secondary-foreground: 45 8% 70%;
+    --muted: 240 5% 13%;
+    --muted-foreground: 40 5% 55%;
+    --accent: 240 5% 15%;
+    --accent-foreground: 45 8% 94%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 5% 15%;
+    --input: 240 5% 15%;
+    --ring: 248 88% 68%;
+    --radius: 0.75rem;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
 }

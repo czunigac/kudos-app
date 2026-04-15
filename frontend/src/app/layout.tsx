@@ -21,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en" className="dark h-full antialiased">
       <body
         className={`${dmSans.variable} font-sans min-h-full flex flex-col`}
       >
