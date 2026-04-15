@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import type { LeaderboardEntry, UserBadge, UserProfile } from "@/types";
 import { useQuery } from "@tanstack/react-query";
-import { Medal, Trophy } from "lucide-react";
+import { Medal, MessageSquareText, Trophy } from "lucide-react";
 
 function StatCard({
   label,
@@ -137,8 +137,15 @@ function LeaderboardColumn({
             <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
               {e.displayName}
             </span>
-            <span className="shrink-0 tabular-nums text-xs text-muted-foreground">
-              {e.kudosCount}
+            <span className="shrink-0 text-right">
+              <span className="tabular-nums text-sm font-semibold text-kudos-teal">
+                {e.totalPoints} pts
+              </span>
+              {e.kudosCount > 1 ? (
+                <span className="ml-1.5 tabular-nums text-[10px] text-muted-foreground">
+                  · {e.kudosCount} kudos
+                </span>
+              ) : null}
             </span>
           </li>
         ))}
@@ -179,11 +186,21 @@ export default function FeedPage() {
         </div>
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="min-w-0 space-y-4">
-          <h2 className="text-lg font-semibold text-foreground">Recent kudos</h2>
-          <KudosFeed />
-        </div>
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <Card className="min-w-0">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <MessageSquareText
+                className="h-5 w-5 text-primary"
+                aria-hidden
+              />
+              Recent kudos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <KudosFeed />
+          </CardContent>
+        </Card>
         <aside className="min-w-0 space-y-4">
           <Card>
             <CardHeader>

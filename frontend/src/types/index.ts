@@ -28,6 +28,9 @@ export interface LeaderboardEntry {
   userId: string;
   displayName: string;
   avatarUrl: string;
+  /** Sum of points from kudos (drives ranking). */
+  totalPoints: number;
+  /** Number of kudos given or received. */
   kudosCount: number;
 }
 
