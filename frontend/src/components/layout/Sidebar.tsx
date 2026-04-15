@@ -4,14 +4,13 @@ import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthStore } from "@/store/authStore";
-import { Award, Home, LogOut, Trophy, User } from "lucide-react";
+import { Award, Home, LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
   { href: "/feed", label: "Feed", icon: Home },
   { href: "/give-kudos", label: "Give Kudos", icon: Award },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
 ] as const;
 
 function isNavActive(pathname: string, href: string, label: string) {

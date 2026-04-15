@@ -9,8 +9,6 @@ function titleForPathname(pathname: string) {
   if (pathname === "/feed" || pathname.startsWith("/feed/")) return "Feed";
   if (pathname === "/give-kudos" || pathname.startsWith("/give-kudos/"))
     return "Give Kudos";
-  if (pathname === "/leaderboard" || pathname.startsWith("/leaderboard/"))
-    return "Leaderboard";
   return "KudosApp";
 }
 
