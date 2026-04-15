@@ -58,13 +58,20 @@ public class KudosRepository(KudosDbContext context) : IKudosRepository
         var rows = await context.Kudos
             .AsNoTracking()
             .GroupBy(k => k.GiverId)
-            .Select(g => new { UserId = g.Key, Cnt = g.Count() })
-            .OrderByDescending(x => x.Cnt)
+            .Select(g => new
+            {
+                UserId = g.Key,
+                TotalPoints = g.Sum(k => k.Points),
+                Cnt = g.Count()
+            })
+            .OrderByDescending(x => x.TotalPoints)
+            .ThenByDescending(x => x.Cnt)
+            .ThenBy(x => x.UserId)
             .Take(top)
             .ToListAsync();
 
-        return await MapUserCountsToLeaderboardAsync(
-            rows.ConvertAll(x => (x.UserId, x.Cnt)));
+        return await MapLeaderboardRowsAsync(
+            rows.ConvertAll(x => (x.UserId, x.TotalPoints, x.Cnt)));
     }
 
     public async Task<IReadOnlyList<LeaderboardEntryDto>> GetTopReceiversAsync(int top)
@@ -72,17 +79,24 @@ public class KudosRepository(KudosDbContext context) : IKudosRepository
         var rows = await context.Kudos
             .AsNoTracking()
             .GroupBy(k => k.ReceiverId)
-            .Select(g => new { UserId = g.Key, Cnt = g.Count() })
-            .OrderByDescending(x => x.Cnt)
+            .Select(g => new
+            {
+                UserId = g.Key,
+                TotalPoints = g.Sum(k => k.Points),
+                Cnt = g.Count()
+            })
+            .OrderByDescending(x => x.TotalPoints)
+            .ThenByDescending(x => x.Cnt)
+            .ThenBy(x => x.UserId)
             .Take(top)
             .ToListAsync();
 
-        return await MapUserCountsToLeaderboardAsync(
-            rows.ConvertAll(x => (x.UserId, x.Cnt)));
+        return await MapLeaderboardRowsAsync(
+            rows.ConvertAll(x => (x.UserId, x.TotalPoints, x.Cnt)));
     }
 
-    private async Task<IReadOnlyList<LeaderboardEntryDto>> MapUserCountsToLeaderboardAsync(
-        List<(Guid UserId, int Count)> rows)
+    private async Task<IReadOnlyList<LeaderboardEntryDto>> MapLeaderboardRowsAsync(
+        List<(Guid UserId, int TotalPoints, int KudosCount)> rows)
     {
         if (rows.Count == 0)
             return [];
@@ -98,7 +112,12 @@ public class KudosRepository(KudosDbContext context) : IKudosRepository
             .Select(r =>
             {
                 var p = profiles[r.UserId];
-                return new LeaderboardEntryDto(p.Id, p.DisplayName, p.AvatarUrl, r.Count);
+                return new LeaderboardEntryDto(
+                    p.Id,
+                    p.DisplayName,
+                    p.AvatarUrl,
+                    r.TotalPoints,
+                    r.KudosCount);
             })
             .ToList();
     }

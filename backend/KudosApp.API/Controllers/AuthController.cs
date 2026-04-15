@@ -34,6 +34,8 @@ public class AuthController(IUserProfileRepository userRepo, IKudosRepository ku
         };
 
         await userRepo.UpsertAsync(profile);
+        await EnsureMilestoneBadgesAsync(userId.Value);
+
         var fresh = await userRepo.GetByIdAsync(userId.Value);
         if (fresh is null)
             return StatusCode(StatusCodes.Status500InternalServerError);
@@ -49,11 +51,28 @@ public class AuthController(IUserProfileRepository userRepo, IKudosRepository ku
         if (userId is null)
             return Unauthorized();
 
+        await EnsureMilestoneBadgesAsync(userId.Value);
+
         var profile = await userRepo.GetByIdAsync(userId.Value);
         if (profile is null)
             return NotFound();
 
         return Ok(await ToProfileResponseAsync(profile));
+    }
+
+    /// <summary>
+    /// Grants milestone badges when kudos history qualifies but rows were never
+    /// created (e.g. activity before this feature or missed awards). Idempotent.
+    /// </summary>
+    private async Task EnsureMilestoneBadgesAsync(Guid userId)
+    {
+        var given = await kudosRepo.CountGivenByUserAsync(userId);
+        if (given >= 1 && !await userRepo.HasBadgeAsync(userId, BadgeType.FirstKudos))
+            await userRepo.AddBadgeAsync(BadgeFactory.CreateFirstKudosGiven(userId));
+
+        var received = await kudosRepo.CountReceivedByUserAsync(userId);
+        if (received >= 1 && !await userRepo.HasBadgeAsync(userId, BadgeType.FirstReceived))
+            await userRepo.AddBadgeAsync(BadgeFactory.CreateFirstRecognition(userId));
     }
 
     private async Task<object> ToProfileResponseAsync(UserProfile p)

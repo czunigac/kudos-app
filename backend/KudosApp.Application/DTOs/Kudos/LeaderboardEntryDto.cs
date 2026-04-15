@@ -4,4 +4,5 @@ public record LeaderboardEntryDto(
     Guid UserId,
     string DisplayName,
     string AvatarUrl,
+    int TotalPoints,
     int KudosCount);
