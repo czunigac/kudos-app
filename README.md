@@ -111,6 +111,14 @@ App: **http://localhost:3000**
 
 ---
 
+## AI tools used
+
+| Tool | Purpose |
+|------|---------|
+| Supabase MCP | Direct DB access from Claude Code — verify migrations, query data, debug without leaving the agent |
+
+---
+
 ## License / assessment
 
 This repository is suitable for **portfolio** or **technical assessment** use (e.g. Applaudo). Adjust licensing and deployment targets for your organization as needed.

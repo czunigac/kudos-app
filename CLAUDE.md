@@ -177,6 +177,13 @@ npm run lint                          # ESLint
 docker compose up --build             # full stack
 docker compose up postgres -d         # DB only
 docker compose logs api -f            # API logs
+
+# MCP — Supabase direct DB access from Claude Code
+# "show me all tables in public schema"
+# "count rows in user_profiles"
+# "verify categories seed data is correct"
+# "show me the last 5 kudos created"
+
 ```
 
 ---
