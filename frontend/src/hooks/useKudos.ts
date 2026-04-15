@@ -3,6 +3,7 @@ import type {
   Category,
   CreateKudosRequest,
   KudosFeedResponse,
+  LeaderboardResponse,
 } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -46,6 +47,20 @@ export function useCreateKudos() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["kudos", "feed"] });
+      void queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      void queryClient.invalidateQueries({ queryKey: ["kudos", "leaderboard"] });
+    },
+  });
+}
+
+export function useLeaderboard(top = 5) {
+  return useQuery({
+    queryKey: ["kudos", "leaderboard", top],
+    queryFn: async () => {
+      const { data } = await api.get<LeaderboardResponse>("/api/kudos/leaderboard", {
+        params: { top },
+      });
+      return data;
     },
   });
 }

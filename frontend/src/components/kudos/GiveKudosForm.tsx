@@ -12,14 +12,16 @@ import { cn } from "@/lib/utils";
 import type { Category } from "@/types";
 import {
   Award,
+  ChevronDown,
   Heart,
   Lightbulb,
   Sparkles,
   Star,
   Users,
+  X,
   type LucideIcon,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const categoryIcons: Record<string, LucideIcon> = {
   Lightbulb,
@@ -48,8 +50,16 @@ function pickCategories(categories: Category[] | undefined): Category[] {
 export function GiveKudosForm() {
   const { toast } = useToast();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
-  const { data: teammates, isLoading: teammatesLoading } = useTeammates();
+  const {
+    data: teammates,
+    isLoading: teammatesLoading,
+    isError: teammatesError,
+    refetch: refetchTeammates,
+  } = useTeammates();
   const createKudos = useCreateKudos();
+
+  const recipientBoxRef = useRef<HTMLDivElement>(null);
+  const listId = "give-kudos-teammates-list";
 
   const [recipientSearch, setRecipientSearch] = useState("");
   const [selectedRecipientId, setSelectedRecipientId] = useState<
@@ -78,6 +88,52 @@ export function GiveKudosForm() {
   }, [teammates, recipientSearch]);
 
   const selectedTeammate = teammates?.find((t) => t.id === selectedRecipientId);
+
+  function openRecipientDropdown() {
+    setRecipientOpen(true);
+    if (selectedTeammate && recipientSearch === "") {
+      setRecipientSearch(selectedTeammate.displayName);
+    }
+  }
+
+  function toggleRecipientDropdown() {
+    setRecipientOpen((open) => {
+      if (!open) {
+        if (selectedTeammate && recipientSearch === "") {
+          setRecipientSearch(selectedTeammate.displayName);
+        }
+        return true;
+      }
+      return false;
+    });
+  }
+
+  function clearRecipient() {
+    setSelectedRecipientId(null);
+    setRecipientSearch("");
+  }
+
+  useEffect(() => {
+    if (!recipientOpen) return;
+
+    function onPointerDown(e: PointerEvent) {
+      const el = recipientBoxRef.current;
+      if (el && !el.contains(e.target as Node)) {
+        setRecipientOpen(false);
+      }
+    }
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setRecipientOpen(false);
+    }
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [recipientOpen]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -134,16 +190,23 @@ export function GiveKudosForm() {
 
   return (
     <form onSubmit={(e) => void onSubmit(e)} className="space-y-6">
-      <div className="space-y-2">
+      <div ref={recipientBoxRef} className="space-y-2">
         <Label htmlFor="recipient">Teammate</Label>
+        <p className="text-xs text-muted-foreground">
+          Search or open the list to choose who receives this kudos.
+        </p>
         <div className="relative">
           <Input
             id="recipient"
             role="combobox"
             aria-expanded={recipientOpen}
+            aria-controls={recipientOpen ? listId : undefined}
+            aria-autocomplete="list"
             autoComplete="off"
             placeholder={
-              teammatesLoading ? "Loading teammates…" : "Search teammates…"
+              teammatesLoading
+                ? "Loading teammates…"
+                : "Search by name or email…"
             }
             value={
               recipientOpen
@@ -151,61 +214,120 @@ export function GiveKudosForm() {
                 : (selectedTeammate?.displayName ?? recipientSearch)
             }
             onChange={(e) => {
+              if (selectedRecipientId) setSelectedRecipientId(null);
               setRecipientSearch(e.target.value);
               setRecipientOpen(true);
-              if (selectedRecipientId) setSelectedRecipientId(null);
             }}
-            onFocus={() => {
-              setRecipientOpen(true);
-              if (selectedTeammate && recipientSearch === "") {
-                setRecipientSearch(selectedTeammate.displayName);
-              }
-            }}
-            disabled={teammatesLoading}
+            onFocus={() => openRecipientDropdown()}
+            disabled={teammatesLoading || teammatesError}
+            className="pr-20"
           />
-          {recipientOpen && !teammatesLoading ? (
+          <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
+            {selectedRecipientId ? (
+              <button
+                type="button"
+                className="rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+                aria-label="Clear teammate"
+                onClick={() => {
+                  clearRecipient();
+                  setRecipientOpen(false);
+                }}
+              >
+                <X className="h-4 w-4" aria-hidden />
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+              aria-label={recipientOpen ? "Close teammate list" : "Open teammate list"}
+              onClick={() => toggleRecipientDropdown()}
+              disabled={teammatesLoading || teammatesError}
+            >
+              <ChevronDown
+                className={cn(
+                  "h-4 w-4 transition-transform",
+                  recipientOpen && "rotate-180"
+                )}
+                aria-hidden
+              />
+            </button>
+          </div>
+          {recipientOpen && !teammatesLoading && !teammatesError ? (
             <ul
-              className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-md border border-border bg-card py-1 text-sm shadow-lg"
+              id={listId}
+              className="absolute left-0 right-0 top-full z-30 mt-1 max-h-60 overflow-auto rounded-md border border-border bg-card py-1 text-sm shadow-lg"
               role="listbox"
+              aria-label="Teammates"
             >
               {filteredTeammates.length === 0 ? (
                 <li className="px-3 py-2 text-muted-foreground">
-                  No matches
+                  {teammates?.length === 0
+                    ? "No teammates to show."
+                    : "No matches — try another name or email."}
                 </li>
               ) : (
-                filteredTeammates.map((t) => (
-                  <li key={t.id} role="option">
-                    <button
-                      type="button"
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-accent"
-                      onClick={() => {
-                        setSelectedRecipientId(t.id);
-                        setRecipientSearch("");
-                        setRecipientOpen(false);
-                      }}
-                    >
-                      <UserAvatar
-                        user={{
-                          displayName: t.displayName,
-                          avatarUrl: t.avatarUrl,
+                filteredTeammates.map((t) => {
+                  const isActive = t.id === selectedRecipientId;
+                  return (
+                    <li key={t.id} role="option" aria-selected={isActive}>
+                      <button
+                        type="button"
+                        className={cn(
+                          "flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors",
+                          isActive
+                            ? "bg-primary/15 text-primary"
+                            : "hover:bg-accent"
+                        )}
+                        onClick={() => {
+                          setSelectedRecipientId(t.id);
+                          setRecipientSearch("");
+                          setRecipientOpen(false);
                         }}
-                        size="sm"
-                      />
-                      <span className="truncate">{t.displayName}</span>
-                    </button>
-                  </li>
-                ))
+                      >
+                        <UserAvatar
+                          user={{
+                            displayName: t.displayName,
+                            avatarUrl: t.avatarUrl,
+                          }}
+                          size="sm"
+                        />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-medium text-foreground">
+                            {t.displayName}
+                          </span>
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {t.email}
+                          </span>
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })
               )}
             </ul>
           ) : null}
         </div>
-        <button
-          type="button"
-          className="text-xs text-muted-foreground hover:text-foreground"
-          onClick={() => setRecipientOpen((o) => !o)}
-        >
-          {recipientOpen ? "Hide list" : "Show list"}
-        </button>
+        {teammatesError ? (
+          <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <p>Could not load teammates.</p>
+            <button
+              type="button"
+              className="mt-1 font-medium underline underline-offset-2 hover:no-underline"
+              onClick={() => void refetchTeammates()}
+            >
+              Try again
+            </button>
+          </div>
+        ) : null}
+        {!teammatesLoading &&
+        !teammatesError &&
+        teammates &&
+        teammates.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No other teammates yet. Once more people join, they will appear
+            here.
+          </p>
+        ) : null}
       </div>
 
       <fieldset className="space-y-3">
