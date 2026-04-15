@@ -58,6 +58,21 @@ public class UserProfileRepository(KudosDbContext context) : IUserProfileReposit
         return existing;
     }
 
+    public async Task<UserProfile?> UpdateProfileAsync(
+        Guid userId,
+        string displayName,
+        string avatarUrl)
+    {
+        var existing = await context.UserProfiles.FindAsync(userId);
+        if (existing is null)
+            return null;
+
+        existing.DisplayName = displayName;
+        existing.AvatarUrl = avatarUrl;
+        await context.SaveChangesAsync();
+        return await GetByIdAsync(userId);
+    }
+
     public Task UpdatePointsAsync(Guid userId, int pointsToAdd) =>
         context.UserProfiles
             .Where(p => p.Id == userId)

@@ -1,5 +1,6 @@
 using KudosApp.API.Auth;
 using KudosApp.API.Extensions;
+using KudosApp.Application.DTOs;
 using KudosApp.Application.Interfaces;
 using KudosApp.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -58,6 +59,47 @@ public class AuthController(IUserProfileRepository userRepo, IKudosRepository ku
             return NotFound();
 
         return Ok(await ToProfileResponseAsync(profile));
+    }
+
+    [HttpPut("profile")]
+    [Authorize]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+    {
+        var userId = User.GetUserId();
+        if (userId is null)
+            return Unauthorized();
+
+        var name = request.DisplayName.Trim();
+        if (name.Length is < 1 or > 100)
+            return BadRequest("Display name must be between 1 and 100 characters.");
+
+        string avatarUrl;
+        if (string.IsNullOrWhiteSpace(request.AvatarUrl))
+        {
+            avatarUrl =
+                $"https://api.dicebear.com/7.x/initials/svg?seed={Uri.EscapeDataString(name)}";
+        }
+        else
+        {
+            var trimmed = request.AvatarUrl.Trim();
+            if (trimmed.Length > 2048)
+                return BadRequest("Avatar URL is too long.");
+            if (!Uri.TryCreate(trimmed, UriKind.Absolute, out var uri)
+                || (uri.Scheme != Uri.UriSchemeHttps && uri.Scheme != Uri.UriSchemeHttp))
+                return BadRequest("Avatar URL must be an http(s) URL.");
+            avatarUrl = trimmed;
+        }
+
+        var updated = await userRepo.UpdateProfileAsync(userId.Value, name, avatarUrl);
+        if (updated is null)
+            return NotFound();
+
+        await EnsureMilestoneBadgesAsync(userId.Value);
+        var fresh = await userRepo.GetByIdAsync(userId.Value);
+        if (fresh is null)
+            return StatusCode(StatusCodes.Status500InternalServerError);
+
+        return Ok(await ToProfileResponseAsync(fresh));
     }
 
     /// <summary>
